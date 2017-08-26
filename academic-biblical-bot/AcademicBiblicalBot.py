@@ -17,8 +17,8 @@ import os
 
 assert os.path.exists('praw.ini')
 
-#ID of already answered comments go here
-alreadyRespondedComments = '/Users/clarence/Desktop/Jose/AcademicBiblicalBot/PastComments.txt'
+#ID of already answered comments goes here
+alreadyRespondedComments = 'PastComments.txt'
 
 automatedResponse = """This is an automatic notification that your comment has been removed. Your comment was a top level comment, and unless you were hostile it is likely that your comment was removed for not meeting /r/AcademicBiblical's standards. Please check that you have provided academic sources, which are almost always necessary. Once you have edited your comment to comply with the rules, please contact a moderator to get your comment reapproved.
 
