@@ -43,6 +43,9 @@ def find_duplicate_comments(comment_id):
             return True
     return False
 
+def save_id(comment):
+    with open(alreadyRespondedComments, "a") as myfile:
+                myfile.write(comment.id + "\n")
 
 def run_bot(reddit):
     
@@ -53,8 +56,7 @@ def run_bot(reddit):
         if comment.parent_id == comment.link_id and find_duplicate_comments(comment.id) == False:
             print(comment.body)
             
-            with open(alreadyRespondedComments, "a") as myfile:
-                myfile.write(comment.id + "\n")
+            save_id(comment)
             
             
 def main():
