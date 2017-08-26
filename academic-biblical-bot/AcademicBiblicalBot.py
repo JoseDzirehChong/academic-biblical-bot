@@ -15,7 +15,7 @@ import requests
 import bs4
 import os
 
-assert os.path.exists('/Users/clarence/Desktop/Jose/AcademicBiblicalBot/praw.ini')
+assert os.path.exists('praw.ini')
 
 #ID of already answered comments go here
 alreadyRespondedComments = '/Users/clarence/Desktop/Jose/AcademicBiblicalBot/PastComments.txt'
