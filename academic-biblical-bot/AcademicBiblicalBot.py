@@ -10,9 +10,6 @@ Created on August 24 20:04 2017
 #imports
 import praw
 import time
-import re
-import requests
-import bs4
 import os
 
 assert os.path.exists('praw.ini')
@@ -23,6 +20,7 @@ alreadyRespondedComments = 'PastComments.txt'
 automatedResponse = """This is an automatic notification that your comment has been removed. Your comment was a top level comment, and unless you were hostile it is likely that your comment was removed for not meeting /r/AcademicBiblical's standards. Please check that you have provided academic sources, which are almost always necessary. Once you have edited your comment to comply with the rules, please contact a moderator to get your comment reapproved.
 
 *I am a bot, bleep bloop. Contact my creator /u/JoseDzirehChong if there are any issues with this bot*. [Source code](https://github.com/JoseDzirehChong/academic-biblical-bot)"""
+
 comment_batch_size = 250
 
 def authenticate(): #get reddit instance
@@ -58,14 +56,28 @@ def run_bot(reddit): #evaluates batches of comments (max batch size is 250 comme
     print("Getting 250 comments...\n")
     
     for comment in reddit.subreddit("ABBotTestSite").comments(limit = comment_batch_size):
-
-        if comment.parent_id == comment.link_id and find_duplicate_comments(comment.id) == False and check_if_removed(reddit, comment.id) == False:
-            print(comment.body)
-            comment.reply(automatedResponse)
+        
+        conditions = comment.parent_id == comment.link_id and find_duplicate_comments(comment.id) == False
+        
+        if conditions:
             
-            save_id(comment)
-            
-        else: comment.reply("placeholder")
+            if check_if_removed(reddit, comment.id) == True:
+                print(comment.body)
+                
+                to_distinguish = comment.reply(automatedResponse)
+                to_distinguish.distinguished == True
+                save_id(comment)
+                
+            elif check_if_removed(reddit, comment.id) == False:
+                print(comment.body)
+                to_distinguish = comment.reply("placeholder")
+                to_distinguish.distinguished == True
+                save_id(comment)
+        elif not conditions:
+            pass
+        
+        else:
+            print("Ya messed up the code, bucko")
             
             
 def main():
