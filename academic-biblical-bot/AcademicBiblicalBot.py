@@ -57,6 +57,10 @@ def run_bot(reddit): #evaluates batches of comments (max batch size is 250 comme
     
     for comment in reddit.subreddit("ABBotTestSite").comments(limit = comment_batch_size):
         
+        age = time.time() - comment.created
+        print(age)
+        break
+    
         conditions = comment.parent_id == comment.link_id and find_duplicate_comments(comment.id) == False
         
         if conditions:
