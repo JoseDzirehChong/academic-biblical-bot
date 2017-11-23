@@ -34,7 +34,7 @@ def authenticate(): #get reddit instance
     return reddit
 
 def find_duplicate_comments(comment_id): #check if comment has been evaluated before
-    past_comments = open('PastComments.txt', 'r')
+    past_comments = open(alreadyRespondedComments, 'r')
     comment_list = past_comments.readlines()
     past_comments.close()
     
@@ -46,6 +46,12 @@ def find_duplicate_comments(comment_id): #check if comment has been evaluated be
 def save_id(comment): #add current comment to list of already evaluated comment
     with open(alreadyRespondedComments, "a") as myfile:
                 myfile.write(comment.id + "\n")
+                
+def check_if_removed(reddit, comment_id):
+    if reddit.comment(comment_id).banned_by == None:
+        return False
+    else:
+        return True
 
 def run_bot(reddit): #evaluates batches of comments (max batch size is 250 comments)
     
@@ -53,17 +59,20 @@ def run_bot(reddit): #evaluates batches of comments (max batch size is 250 comme
     
     for comment in reddit.subreddit("ABBotTestSite").comments(limit = comment_batch_size):
 
-        if comment.parent_id == comment.link_id and find_duplicate_comments(comment.id) == False:
+        if comment.parent_id == comment.link_id and find_duplicate_comments(comment.id) == False and check_if_removed(reddit, comment.id) == False:
             print(comment.body)
+            comment.reply(automatedResponse)
             
             save_id(comment)
+            
+        else: comment.reply("placeholder")
             
             
 def main():
     reddit = authenticate() #get the reddit instance
     while True:
         run_bot(reddit) #use reddit instance to run bot whenever program is active
-        time.sleep(5) #to make sure I don't burn computer resources
+        time.sleep(10) #to make sure I don't burn computer resources
         
 if __name__ == "__main__":
     main()
