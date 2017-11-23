@@ -25,7 +25,7 @@ automatedResponse = """This is an automatic notification that your comment has b
 *I am a bot, bleep bloop. Contact my creator /u/JoseDzirehChong if there are any issues with this bot*. [Source code](https://github.com/JoseDzirehChong/academic-biblical-bot)"""
 comment_batch_size = 250
 
-def authenticate():
+def authenticate(): #get reddit instance
     
     print('Authenticating...\n')
     reddit = praw.Reddit('AcademicBiblicalBot', user_agent = 'web:AcademicBiblicalBot:v0.1.0 (by /u/JoseDzirehChong)')
@@ -33,7 +33,7 @@ def authenticate():
     
     return reddit
 
-def find_duplicate_comments(comment_id):
+def find_duplicate_comments(comment_id): #check if comment has been evaluated before
     past_comments = open('PastComments.txt', 'r')
     comment_list = past_comments.readlines()
     past_comments.close()
@@ -43,11 +43,11 @@ def find_duplicate_comments(comment_id):
             return True
     return False
 
-def save_id(comment):
+def save_id(comment): #add current comment to list of already evaluated comment
     with open(alreadyRespondedComments, "a") as myfile:
                 myfile.write(comment.id + "\n")
 
-def run_bot(reddit):
+def run_bot(reddit): #evaluates batches of comments (max batch size is 250 comments)
     
     print("Getting 250 comments...\n")
     
@@ -60,9 +60,10 @@ def run_bot(reddit):
             
             
 def main():
-    reddit = authenticate()
+    reddit = authenticate() #get the reddit instance
     while True:
-        run_bot(reddit)
+        run_bot(reddit) #use reddit instance to run bot whenever program is active
+        time.sleep(5) #to make sure I don't burn computer resources
         
 if __name__ == "__main__":
     main()
