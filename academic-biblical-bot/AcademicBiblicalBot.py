@@ -16,7 +16,6 @@ import calendar
 
 #TODO
     #Give code a quick read before releasing it
-    #Update 40 second age limit of comment to "minimum_comment_age"
     #Change the intervals of time between when this bot is run
     #Find a server to host this bot
     #Check if POSIX time works with DST transitions
@@ -30,7 +29,7 @@ automatedResponse = """This is an automatic notification that your comment has b
 
 comment_batch_size = 250
 minimum_comment_age = 1209600
-subreddit_to_check = "ABBotTestSite"
+subreddit_to_check = "AcademicBiblical"
 
 def authenticate(): #get reddit instance
     
@@ -107,7 +106,7 @@ def main():
         assert os.path.exists('praw.ini')
         assert os.path.exists('PastComments.txt')
         run_bot(reddit) #use reddit instance to run bot whenever program is active
-        time.sleep(10) #to make sure I don't burn computer resources
+        time.sleep(30) #to make sure I don't burn computer resources
         
 if __name__ == "__main__":
     main()
