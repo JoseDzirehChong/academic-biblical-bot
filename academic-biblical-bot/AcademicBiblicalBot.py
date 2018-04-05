@@ -16,9 +16,11 @@ import calendar
 
 #TODO
     #Give code a quick read before releasing it
+    #Update 40 second age limit of comment to "minimum_comment_age"
+    #Change the intervals of time between when this bot is run
+    #Find a server to host this bot
     #Check if POSIX time works with DST transitions
     #Point bot towards AcademicBiblical
-    #Change way to detect if comment is removed
     
 #ID of already answered comments goes here
 alreadyRespondedComments = 'PastComments.txt'
@@ -27,7 +29,7 @@ automatedResponse = """This is an automatic notification that your comment has b
 *I am a bot, bleep bloop. Contact my creator /u/JoseDzirehChong if there are any issues with this bot. [Source code](https://github.com/JoseDzirehChong/academic-biblical-bot)*"""
 
 comment_batch_size = 250
-minimum_comment_age = 180 #1209600
+minimum_comment_age = 1209600
 subreddit_to_check = "ABBotTestSite"
 
 def authenticate(): #get reddit instance
@@ -50,16 +52,13 @@ def find_duplicate_comments(comment_id): #check if comment has been evaluated be
 
 def save_id(comment): #add current comment to list of already evaluated comment
     with open(alreadyRespondedComments, "a") as myfile:
-        myfile.write(comment.id + "\n")
+                myfile.write(comment.id + "\n")
                 
-def check_if_removed_mod(reddit, comment_id):
+def check_if_removed(reddit, comment_id):
     if reddit.comment(comment_id).banned_by == None:
         return False
     else:
         return True
-    
-def check_if_removed_nonmod(reddit, comment_id):
-    return reddit.comment(comment_id).author == None and reddit.comment(comment_id).body == "[removed]"
     
 def UTC_to_posix(timestamp):
     posix = calendar.timegm(timestamp.utctimetuple())
@@ -75,25 +74,26 @@ def run_bot(reddit): #evaluates batches of comments (max batch size is 250 comme
         creation = datetime.utcfromtimestamp(comment.created_utc) #working
         creation_posix = UTC_to_posix(creation)
         
+        print(str(now_posix) + " now") #working
+        print(str(creation_posix) + " created")
+
         age = now_posix - creation_posix
+        
+        print(age)
 
         conditions = comment.parent_id == comment.link_id and find_duplicate_comments(comment.id) == False and age < minimum_comment_age
         
         if conditions:
             
-            if check_if_removed_mod(reddit, comment.id):
-                print(comment.body + " (removed)")
+            if check_if_removed(reddit, comment.id) == True:
+                print(comment.body + "(removed)")
                 to_distinguish = comment.reply(automatedResponse)
                 to_distinguish.mod.distinguish(sticky=False)
                 save_id(comment)
                 
-            elif check_if_removed_mod(reddit, comment.id) == False:
-                if check_if_removed_nonmod(reddit, comment.id):
-                    print(comment.body + " (removed)")
-                    comment.reply(automatedResponse)
-                    save_id(comment)
-                else:
-                    print(comment.body + " (not removed)")
+            elif check_if_removed(reddit, comment.id) == False:
+                print(comment.body + "(not_removed)")
+            
         elif not conditions:
             pass
         
@@ -107,7 +107,7 @@ def main():
         assert os.path.exists('praw.ini')
         assert os.path.exists('PastComments.txt')
         run_bot(reddit) #use reddit instance to run bot whenever program is active
-        time.sleep(600) #to make sure I don't burn computer resources
+        time.sleep(10) #to make sure I don't burn computer resources
         
 if __name__ == "__main__":
     main()
