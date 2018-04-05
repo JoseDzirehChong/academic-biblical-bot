@@ -11,6 +11,8 @@ Created on August 24 20:04 2017
 import praw
 import time
 import os
+from datetime import datetime
+import calendar
 
 #TODO
     #Give code a quick read before releasing it
@@ -57,6 +59,10 @@ def check_if_removed(reddit, comment_id):
         return False
     else:
         return True
+    
+def UTC_to_posix(timestamp):
+    posix = calendar.timegm(timestamp.utctimetuple())
+    return posix
 
 def run_bot(reddit): #evaluates batches of comments (max batch size is 250 comments)
     
@@ -64,9 +70,16 @@ def run_bot(reddit): #evaluates batches of comments (max batch size is 250 comme
     
     for comment in reddit.subreddit(subreddit_to_check).comments(limit = comment_batch_size):
         
-        now = time.time()
-        creation = comment.created_utc
-        age = now - creation
+        now_posix = time.time() #working
+        creation = datetime.utcfromtimestamp(comment.created_utc) #working
+        creation_posix = UTC_to_posix(creation)
+        
+        print(str(now_posix) + " now") #working
+        print(str(creation_posix) + " created")
+
+        age = now_posix - creation_posix
+        
+        print(age)
 
         conditions = comment.parent_id == comment.link_id and find_duplicate_comments(comment.id) == False and age < minimum_comment_age
         
