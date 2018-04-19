@@ -16,10 +16,9 @@ import calendar
 
 #TODO
     #Give code a quick read before releasing it
-    #Change the intervals of time between when this bot is run
     #Find a server to host this bot
     #Check if POSIX time works with DST transitions
-    #Point bot towards AcademicBiblical
+    #Test a final time
     
 #ID of already answered comments goes here
 alreadyRespondedComments = 'PastComments.txt'
@@ -27,14 +26,21 @@ automatedResponse = """This is an automatic notification that your comment has b
 
 *I am a bot, bleep bloop. Contact my creator /u/JoseDzirehChong if there are any issues with this bot. [Source code](https://github.com/JoseDzirehChong/academic-biblical-bot)*"""
 
+test_conditions = True
+
 comment_batch_size = 250
 minimum_comment_age = 1209600
 subreddit_to_check = "AcademicBiblical"
 
+if test_conditions:
+    comment_batch_size = 10
+    minimum_comment_age = 180
+    subreddit_to_check = "ABBotTestSite"
+    
 def authenticate(): #get reddit instance
     
     print('Authenticating...\n')
-    reddit = praw.Reddit('AcademicBiblicalBot', user_agent = 'web:AcademicBiblicalBot:v0.1.0 (by /u/JoseDzirehChong)')
+    reddit = praw.Reddit('AcademicBiblicalBot', user_agent = 'web:AcademicBiblicalBot:v1.0.0 (by /u/JoseDzirehChong)')
     print('Authenticated as {}\n'.format(reddit.user.me()))
     
     return reddit
@@ -54,50 +60,47 @@ def save_id(comment): #add current comment to list of already evaluated comment
                 myfile.write(comment.id + "\n")
                 
 def check_if_removed(reddit, comment_id):
-    if reddit.comment(comment_id).banned_by == None:
-        return False
-    else:
-        return True
+    return reddit.comment(comment_id).banned_by is not None
     
 def UTC_to_posix(timestamp):
     posix = calendar.timegm(timestamp.utctimetuple())
     return posix
 
+def get_age(comment):
+    now_posix = time.time() #working
+    creation = datetime.utcfromtimestamp(comment.created_utc) #working
+    creation_posix = UTC_to_posix(creation)
+        
+    print(str(now_posix) + " now") #working
+    print(str(creation_posix) + " created")
+    
+    age = now_posix - creation_posix
+        
+    return age
+
+def respond_if_removed(comment):
+    print(comment.body + "(removed)")
+    to_distinguish = comment.reply(automatedResponse)
+    to_distinguish.mod.distinguish(sticky=False)
+    save_id(comment)
+        
 def run_bot(reddit): #evaluates batches of comments (max batch size is 250 comments)
     
     print("Getting {} comments...\n".format(comment_batch_size))
     
     for comment in reddit.subreddit(subreddit_to_check).comments(limit = comment_batch_size):
         
-        now_posix = time.time() #working
-        creation = datetime.utcfromtimestamp(comment.created_utc) #working
-        creation_posix = UTC_to_posix(creation)
+        ageVar = get_age(comment)
         
-        print(str(now_posix) + " now") #working
-        print(str(creation_posix) + " created")
-
-        age = now_posix - creation_posix
-        
-        print(age)
-
-        conditions = comment.parent_id == comment.link_id and find_duplicate_comments(comment.id) == False and age < minimum_comment_age
+        conditions = comment.parent_id == comment.link_id and find_duplicate_comments(comment.id) == False and ageVar < minimum_comment_age
         
         if conditions:
             
-            if check_if_removed(reddit, comment.id) == True:
-                print(comment.body + "(removed)")
-                to_distinguish = comment.reply(automatedResponse)
-                to_distinguish.mod.distinguish(sticky=False)
-                save_id(comment)
+            if check_if_removed(reddit, comment.id):
+                respond_if_removed(comment)
                 
-            elif check_if_removed(reddit, comment.id) == False:
+            else:
                 print(comment.body + "(not_removed)")
-            
-        elif not conditions:
-            pass
-        
-        else:
-            print("Ya messed up the code, bucko")
             
             
 def main():
